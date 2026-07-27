@@ -53,3 +53,5 @@ Follow the examples to build a command, and click Deploy Command
 Get another computer to run your dropper (bingledrop.exe by default) via phishing or an exploit
 
 Boom! You're in!
+
+<img width="523" height="561" alt="Screenshot 2026-07-24 021408" src="https://github.com/user-attachments/assets/8ab7b9a0-34c1-438e-b1da-e746b87b4f0a" />
