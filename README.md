@@ -1,4 +1,4 @@
-Cool little implant.
+A cool little implant made in C.
 
 
 Setup:
