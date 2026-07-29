@@ -54,7 +54,7 @@ python cnc.py 5706 (replace 5706 with another port if you like, but make sure yo
 ```
 
 open a web browser and visit http://127.0.0.1:<CNC port>/admin
-or if accessing the CNC remotely (like SSH) visit http://<CNC IP>:<CNC port>/admin
+or if accessing the CNC remotely (like SSH) visit http://(CNC IP):(CNC port)/admin
 
 
 Follow the examples to build a command, and click Deploy Command
