@@ -13,8 +13,11 @@ Open drop.c and find:
 ```
 
 replace dropped.exe with the name of the payload you're gonna compile in a second (optional if not changing name but naming it svchost.exe will hide it in Task Manager)
+
 replace 192.168.1.230 with your CNC's IP address
+
 replace 5706 with the port your CNC is using, make sure it's accessable (optional)
+
 
 Open dropped.c and find:
 
@@ -24,6 +27,7 @@ Open dropped.c and find:
 ```
 
 replace 192.168.1.230 with your CNC's IP address
+
 replace 5706 with the port your CNC is using
 
 
@@ -54,13 +58,15 @@ python cnc.py 5706 (replace 5706 with another port if you like, but make sure yo
 ```
 
 note: CNC will open on port 8080 if no port specified
+
 open a web browser and visit http://127.0.0.1:(CNC port)/admin
+
 or if accessing the CNC remotely (like SSH) visit http://(CNC IP):(CNC port)/admin
 
 
 Follow the examples to build a command, and click Deploy Command
 
-Get another computer to run your dropper (bingledrop.exe by default) via phishing or an exploit (you can use my Eternal repository to perform an exploit on a vulnerable target, you'll usually want a 32-bit binary for this.)
+Get another computer to run your dropper (or stage 2 if for some reason it fails to run the dropper, which is sometimes the case) via phishing or an exploit (you can use my Eternal repository to perform an exploit on a vulnerable target, you'll usually want a 32-bit binary for this.)
 
 Boom! You're in!
 
