@@ -47,6 +47,8 @@ i686-w64-mingw32-gcc -O2 -mwindows dropped.c -o svchost.exe -lwininet
 
 but if you want both you need to build x64, then modify the dropper to download a different filename than the x64 build then build both stage 1 and stage 2 as 32-bit
 
+I might provide windows build commands later but windows yucky and you can probably figure it out
+
 place dropped.exe in the payloads folder
 
 
