@@ -33,7 +33,7 @@ replace 5706 with the port your CNC is using
 
 Build:
 
-```Bash
+```bash
 x86_64-w64-mingw32-gcc -O2 -mwindows drop.c -o bingledrop.exe -lwininet
 x86_64-w64-mingw32-gcc -O2 -mwindows dropped.c -o dropped.exe -lwininet
 ```
