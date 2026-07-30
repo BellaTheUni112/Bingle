@@ -63,7 +63,7 @@ note: CNC will open on port 8080 if no port specified
 
 open a web browser and visit http://127.0.0.1:(CNC port)/admin
 
-or if accessing the CNC remotely (like SSH) visit http://(CNC IP):(CNC port)/admin
+or if accessing the CNC remotely (like SSH) visit http://(CNC IP):(CNC port)/admin (if CNC port is accessible such as using a VPN like Tailscale)
 
 
 Follow the examples to build a command, and click Deploy Command
